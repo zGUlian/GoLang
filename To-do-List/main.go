@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -63,11 +65,20 @@ func markTaskDone(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Task not found", http.StatusNotFound)
 }
 
+func serveIndex(w http.ResponseWriter, r *http.Request) {
+	path := filepath.Join("static", "index.html")
+	http.ServeFile(w, r, path)
+}
+
 func main() {
+	http.HandleFunc("/", serveIndex)
 	http.HandleFunc("/tasks", getTasks)
 	http.HandleFunc("/add", addTask)
 	http.HandleFunc("/done", markTaskDone)
 
 	fmt.Println("Servidor rodando na porta 8080...")
-	http.ListenAndServe(":8080", nil)
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		fmt.Println("Erro ao iniciar servidor:", err)
+		os.Exit(1)
+	}
 }
